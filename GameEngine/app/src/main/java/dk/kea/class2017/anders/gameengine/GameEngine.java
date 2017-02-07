@@ -13,6 +13,7 @@ public abstract class GameEngine extends Activity {
         return null;
     }
 
+/*
     public Music loadMusic(String fileName) {
         return null;
     }
@@ -20,6 +21,7 @@ public abstract class GameEngine extends Activity {
     public Sound loadSound(String fileName) {
         return null;
     }
+*/
 
     public void clearFrameBuffer(int color) {
 
@@ -64,7 +66,7 @@ public abstract class GameEngine extends Activity {
     public List<com.badlogic.agd.KeyEvent> getKeyEvents() {
         return null;
     }*/
-    
+
 /*    public abstract float[] getAccelerometer();*/
 
 }

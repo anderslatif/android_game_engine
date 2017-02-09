@@ -15,20 +15,24 @@ public class SimpleScreen extends Screen {
         super(game);
         Log.d("SimpleGame class", "##########################################");
 
-        bitmap = game.loadBitmap("bob.png");
+        //bitmap = game.loadBitmap("bob.png");
     }
 
     @Override
     public void update(float deltaTime) {
 
-        Log.d("SimpleGame class", "*****************************************");
+        game.clearFrameBuffer(Color.BLUE);
+        return;
+
+
+/*        Log.d("SimpleGame class", "*****************************************");
 
         if (game.isTouchDown(0)) {
             x = game.getTouchX(0);
             y = game.getTouchY(0);
         }
         game.clearFrameBuffer(Color.BLUE);
-        game.drawBitmap(bitmap, x, y);
+        game.drawBitmap(bitmap, x, y);*/
     }
 
     @Override

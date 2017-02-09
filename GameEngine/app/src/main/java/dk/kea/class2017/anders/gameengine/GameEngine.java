@@ -2,8 +2,12 @@ package dk.kea.class2017.anders.gameengine;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -15,6 +19,9 @@ public abstract class GameEngine extends Activity implements Runnable {
     private Thread mainLoopThread;
     private State state = State.Paused;
     private List<State> stateChanges = new ArrayList<>();
+    private SurfaceView surfaceView;
+    private SurfaceHolder surfaceHolder;
+    private Screen screen;
 
 
     public abstract Screen createStartScreen();
@@ -26,9 +33,19 @@ public abstract class GameEngine extends Activity implements Runnable {
         // Setting the bits in our status byte, each bit is like a bool
         // we can set the bit with OR and we can get the status by AND'ing with the mask and check if result is bigger than zero
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        surfaceView = new SurfaceView(this);
+        setContentView(surfaceView);
+        surfaceHolder = surfaceView.getHolder();
+        screen = createStartScreen();
     }
 
-    public void setScreen(Screen screen) {}
+    public void setScreen(Screen screen) {
+        if (this.screen != null) {
+            this.screen.dispose();
+        }
+        this.screen = screen;
+    }
 
     public Bitmap loadBitmap(String fileName) {
         return null;
@@ -109,6 +126,13 @@ public abstract class GameEngine extends Activity implements Runnable {
                         Log.d("GameEngine", "state changed to Resumed");
                     }
                     stateChanges.clear();
+                    if (state == State.Running) {
+                        if (!surfaceHolder.getSurface().isValid()) continue;
+                        Canvas canvas = surfaceHolder.lockCanvas();
+                        // we will do all the drawing here
+                        canvas.drawColor(Color.RED);
+                        surfaceHolder.unlockCanvasAndPost(canvas);
+                    }
                 }
             }
         }

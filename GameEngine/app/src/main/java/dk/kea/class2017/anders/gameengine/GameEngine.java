@@ -2,10 +2,31 @@ package dk.kea.class2017.anders.gameengine;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
 
-public abstract class GameEngine extends Activity {
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class GameEngine extends Activity implements Runnable {
+
+    private Thread mainLoopThread;
+    private State state = State.Paused;
+    private List<State> stateChanges = new ArrayList<>();
+
 
     public abstract Screen createStartScreen();
+
+    public void onCreate(Bundle savedInstance) {
+        super.onCreate(savedInstance);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        // Setting the bits in our status byte, each bit is like a bool
+        // we can set the bit with OR and we can get the status by AND'ing with the mask and check if result is bigger than zero
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
 
     public void setScreen(Screen screen) {}
 
@@ -68,5 +89,50 @@ public abstract class GameEngine extends Activity {
     }*/
 
 /*    public abstract float[] getAccelerometer();*/
+
+
+    public void run() {
+        while (true) {
+            synchronized (stateChanges) {
+                for (int i=0; i<stateChanges.size(); i++) {
+                    state = stateChanges.get(i);
+                    if (state == State.Disposed) {
+                        Log.d("GameEngine", "state changed to Disposed");
+                        return;
+                    }
+                    if (state == State.Paused) {
+                        Log.d("GameEngine", "state changed to Paused");
+                        return;
+                    }
+                    if (state == State.Resumed) {
+                        state = State.Running;
+                        Log.d("GameEngine", "state changed to Resumed");
+                    }
+                    stateChanges.clear();
+                }
+            }
+        }
+    }
+
+    public void onPause() {
+        super.onPause();
+        synchronized (stateChanges) {
+            if (isFinishing()) {
+                stateChanges.add(State.Disposed);
+            } else {
+                stateChanges.add(State.Paused);
+            }
+        }
+
+    }
+
+    public void onResume() {
+        super.onResume();
+        mainLoopThread = new Thread(this);
+        mainLoopThread.start();
+        synchronized (stateChanges) {
+            stateChanges.add(State.Resumed);
+        }
+    }
 
 }

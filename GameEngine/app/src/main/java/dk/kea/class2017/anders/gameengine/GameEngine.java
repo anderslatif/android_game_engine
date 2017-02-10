@@ -125,7 +125,7 @@ public abstract class GameEngine extends Activity implements Runnable {
                         state = State.Running;
                         Log.d("GameEngine", "state changed to Resumed");
                     }
-                    stateChanges.clear();
+//                    stateChanges.clear();
                     if (state == State.Running) {
                         if (!surfaceHolder.getSurface().isValid()) continue;
                         Canvas canvas = surfaceHolder.lockCanvas();

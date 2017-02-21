@@ -2,8 +2,10 @@ package dk.kea.class2017.anders.gameengine;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -11,6 +13,8 @@ import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +26,7 @@ public abstract class GameEngine extends Activity implements Runnable {
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
     private Screen screen;
+    private Canvas canvas = null;
 
 
     public abstract Screen createStartScreen();
@@ -34,6 +39,7 @@ public abstract class GameEngine extends Activity implements Runnable {
         // we can set the bit with OR and we can get the status by AND'ing with the mask and check if result is bigger than zero
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        // a surface view has direct access to the screen without delay  .. unlike other views where the hardware schedules for better performance
         surfaceView = new SurfaceView(this);
         setContentView(surfaceView);
         surfaceHolder = surfaceView.getHolder();
@@ -48,7 +54,30 @@ public abstract class GameEngine extends Activity implements Runnable {
     }
 
     public Bitmap loadBitmap(String fileName) {
-        return null;
+        InputStream in = null;
+        Bitmap bitmap = null;
+
+        try {
+            getAssets();
+            in = getAssets().open(fileName);
+            // is a service class where we can call util methods statically without creating a new object
+            bitmap = BitmapFactory.decodeStream(in);
+            if (bitmap == null) {
+                // in case a legal file has been found but it wasn't a graphic, so the bitmap is null
+                throw new RuntimeException("Could not create a bitmap from file " + fileName);
+            }
+            return bitmap;
+        } catch(IOException e) {
+            throw new RuntimeException("Could not load the file with file name: " + fileName);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    Log.e("GameEngine", "loadBitmap() failed to close the file " + fileName);
+                }
+            }
+        }
     }
 
 /*
@@ -62,23 +91,40 @@ public abstract class GameEngine extends Activity implements Runnable {
 */
 
     public void clearFrameBuffer(int color) {
-
+        canvas.drawColor(color);
     }
 
     public int getFrameBufferWidth() {
-        return 0;
+        return surfaceView.getWidth();
     }
 
     public int getFrameBufferHeight() {
-        return 0;
+        return surfaceView.getHeight();
     }
 
     public void drawBitmap(Bitmap bitmap, int x, int y) {
-
+        if (canvas != null) {
+            canvas.drawBitmap(bitmap, x, y, null);
+        }
     }
 
+    Rect src = new Rect();
+    Rect dst = new Rect();
     public void drawBitmap(Bitmap bitmap, int x, int y, int srcX, int srcY, int srcWidth, int srcHeight) {
+        if (canvas == null) {
+            return;
+        }
+        src.left = srcX;
+        src.top = srcY;
+        src.right = srcX + srcWidth;
+        src.bottom = srcY + srcHeight;
 
+        dst.left = x;
+        dst.top = y;
+        dst.right = x + srcWidth;
+        dst.bottom = y + srcHeight;
+
+        canvas.drawBitmap(bitmap, src, dst, null);
     }
 
     public boolean isKeyPressed(int keyCode) {
@@ -114,25 +160,39 @@ public abstract class GameEngine extends Activity implements Runnable {
                 for (int i=0; i<stateChanges.size(); i++) {
                     state = stateChanges.get(i);
                     if (state == State.Disposed) {
+                        if (screen != null) {
+                            screen.dispose();
+                        }
                         Log.d("GameEngine", "state changed to Disposed");
                         return;
                     }
                     if (state == State.Paused) {
+                        if (screen != null) {
+                            screen.pause();
+                        }
                         Log.d("GameEngine", "state changed to Paused");
                         return;
                     }
                     if (state == State.Resumed) {
+                        if (screen != null) {
+                            screen.resume();
+                        }
                         state = State.Running;
                         Log.d("GameEngine", "state changed to Resumed");
                     }
-//                    stateChanges.clear();
-                    if (state == State.Running) {
-                        if (!surfaceHolder.getSurface().isValid()) continue;
-                        Canvas canvas = surfaceHolder.lockCanvas();
-                        // we will do all the drawing here
-                        canvas.drawColor(Color.RED);
-                        surfaceHolder.unlockCanvasAndPost(canvas);
+                }
+                stateChanges.clear();
+                if (state == State.Running) {
+                    if (!surfaceHolder.getSurface().isValid()) continue;
+                    canvas = surfaceHolder.lockCanvas();
+                    // we will do all the drawing here
+
+                    if (screen != null) {
+                        screen.update(0);
                     }
+                    surfaceHolder.unlockCanvasAndPost(canvas);
+                    // releases the canvas for garbage collection cause lockCanvas creates a new .. returning memory
+                    canvas = null;
                 }
             }
         }

@@ -25,13 +25,12 @@ public class SimpleScreen extends Screen {
 
 
 
-/*        Log.d("SimpleGame class", "*****************************************");
-
+/*
         if (game.isTouchDown(0)) {
             x = game.getTouchX(0);
             y = game.getTouchY(0);
         }*/
-//        game.clearFrameBuffer(random.nextInt());
+        game.clearFrameBuffer(Color.BLUE);
         game.drawBitmap(bitmap, 10, 10);
         game.drawBitmap(bitmap, 100, 150, 0, 0, 64, 64);
 

@@ -1,6 +1,7 @@
 package dk.kea.class2017.anders.gameengine;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -27,7 +28,9 @@ public abstract class GameEngine extends Activity implements Runnable {
     private SurfaceHolder surfaceHolder;
     private Screen screen;
     private Canvas canvas = null;
-
+    private Bitmap offscreenSurface;
+    Rect src = new Rect();
+    Rect dst = new Rect();
 
     public abstract Screen createStartScreen();
 
@@ -44,6 +47,12 @@ public abstract class GameEngine extends Activity implements Runnable {
         setContentView(surfaceView);
         surfaceHolder = surfaceView.getHolder();
         screen = createStartScreen();
+
+        if (surfaceView.getWidth() > surfaceView.getHeight()) {
+            setOffscreenSurface(480, 320);
+        } else {
+            setOffscreenSurface(320, 480);
+        }
     }
 
     public void setScreen(Screen screen) {
@@ -52,11 +61,9 @@ public abstract class GameEngine extends Activity implements Runnable {
         }
         this.screen = screen;
     }
-
     public Bitmap loadBitmap(String fileName) {
         InputStream in = null;
         Bitmap bitmap = null;
-
         try {
             getAssets();
             in = getAssets().open(fileName);
@@ -94,6 +101,14 @@ public abstract class GameEngine extends Activity implements Runnable {
         canvas.drawColor(color);
     }
 
+    public void setOffscreenSurface(int width, int height) {
+        if (offscreenSurface != null) {
+            offscreenSurface.recycle();
+        }
+        offscreenSurface = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        canvas = new Canvas(offscreenSurface);
+    }
+
     public int getFrameBufferWidth() {
         return surfaceView.getWidth();
     }
@@ -108,8 +123,6 @@ public abstract class GameEngine extends Activity implements Runnable {
         }
     }
 
-    Rect src = new Rect();
-    Rect dst = new Rect();
     public void drawBitmap(Bitmap bitmap, int x, int y, int srcX, int srcY, int srcWidth, int srcHeight) {
         if (canvas == null) {
             return;
@@ -184,12 +197,24 @@ public abstract class GameEngine extends Activity implements Runnable {
                 stateChanges.clear();
                 if (state == State.Running) {
                     if (!surfaceHolder.getSurface().isValid()) continue;
-                    canvas = surfaceHolder.lockCanvas();
+                    Canvas canvas = surfaceHolder.lockCanvas();
                     // we will do all the drawing here
 
                     if (screen != null) {
                         screen.update(0);
                     }
+
+                    src.left = 0;
+                    src.top = 0;
+                    // subtract 1 because pixels start at 0 but size starts at 1
+                    src.right = offscreenSurface.getWidth() - 1;
+                    src.bottom = offscreenSurface.getHeight() - 1;
+                    dst.left = 0;
+                    dst.top = 0;
+                    dst.right = surfaceView.getWidth() - 1;
+                    dst.bottom = surfaceView.getHeight() - 1;
+                    canvas.drawBitmap(offscreenSurface, src, dst, null);
+
                     surfaceHolder.unlockCanvasAndPost(canvas);
                     // releases the canvas for garbage collection cause lockCanvas creates a new .. returning memory
                     canvas = null;

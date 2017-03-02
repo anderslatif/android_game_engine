@@ -7,7 +7,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.text.method.MultiTapKeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -21,7 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GameEngine extends Activity implements Runnable, View.OnKeyListener {
+public abstract class GameEngine extends Activity implements Runnable, SensorEventListener {
 
     private Thread mainLoopThread;
     private State state = State.Paused;
@@ -33,7 +38,11 @@ public abstract class GameEngine extends Activity implements Runnable, View.OnKe
     private Bitmap offscreenSurface;
     Rect src = new Rect();
     Rect dst = new Rect();
-    private boolean[] pressedKeys = new boolean[256];
+    private TouchHandler touchHandler;
+    private List<TouchEvent> touchEventBuffer = new ArrayList<>();
+    private TouchEventPool touchEventPool = new TouchEventPool();
+    private float[] accelerometer = new float[3];
+
 
     public abstract Screen createStartScreen();
 
@@ -55,6 +64,12 @@ public abstract class GameEngine extends Activity implements Runnable, View.OnKe
             setOffscreenSurface(480, 320);
         } else {
             setOffscreenSurface(320, 480);
+        }
+        touchHandler = new MultiTouchHandler(surfaceView, touchEventBuffer, touchEventPool);
+        SensorManager manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (manager.getSensorList(Sensor.TYPE_ACCELEROMETER).size() != 0) {
+            Sensor accSensor =  manager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
+            manager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_GAME);
         }
     }
 
@@ -143,43 +158,28 @@ public abstract class GameEngine extends Activity implements Runnable, View.OnKe
         canvas.drawBitmap(bitmap, src, dst, null);
     }
 
-    public boolean onKey(View v, int keyCode, KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            // turning that one position of the pressed key to true
-            pressedKeys[keyCode] = true;
-        }
-        if (event.getAction() == KeyEvent.ACTION_UP) {
-            pressedKeys[keyCode] = false;
-        }
-        return false;
-    }
-
-    public boolean isKeyPressed(int keyCode) {
-        return pressedKeys[keyCode];
-    }
-
     public boolean isTouchDown(int pointer) {
-        return false;
+        return touchHandler.isTouchDown(pointer);
     }
 
     public int getTouchX(int pointer) {
-        return 0;
+        return (int) (touchHandler.getTouchX(pointer) * (float) offscreenSurface.getWidth() / (float) surfaceView.getWidth());
     }
 
     public int getTouchY(int pointer) {
-        return 0;
+        return (int) (touchHandler.getTouchY(pointer) * (float) offscreenSurface.getHeight() / (float) surfaceView.getHeight());
     }
 
-/*    public List<com.badlogic.agd.KeyEvent> getKeyEvents() {
-        return null;
+    public float[] getAccelerometer() {
+        return accelerometer;
     }
 
-    public List<com.badlogic.agd.KeyEvent> getKeyEvents() {
-        return null;
-    }*/
+    // implementing the method from the SensorEventListener interface but we don't use it for anything
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-/*    public abstract float[] getAccelerometer();*/
-
+    public void onSensorChanged(SensorEvent event) {
+        System.arraycopy(event.values, 0, accelerometer, 0, 3);
+    }
 
     public void run() {
         while (true) {
@@ -242,11 +242,11 @@ public abstract class GameEngine extends Activity implements Runnable, View.OnKe
         synchronized (stateChanges) {
             if (isFinishing()) {
                 stateChanges.add(State.Disposed);
+                ((SensorManager)getSystemService(Context.SENSOR_SERVICE)).unregisterListener(this);
             } else {
                 stateChanges.add(State.Paused);
             }
         }
-
     }
 
     public void onResume() {
@@ -255,6 +255,11 @@ public abstract class GameEngine extends Activity implements Runnable, View.OnKe
         mainLoopThread.start();
         synchronized (stateChanges) {
             stateChanges.add(State.Resumed);
+            SensorManager manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+            if (manager.getSensorList(Sensor.TYPE_ACCELEROMETER).size() != 0) {
+                Sensor accSensor = manager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
+                manager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_GAME);
+            }
         }
     }
 

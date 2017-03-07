@@ -5,19 +5,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.text.method.MultiTapKeyListener;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -39,8 +35,9 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     Rect src = new Rect();
     Rect dst = new Rect();
     private TouchHandler touchHandler;
-    private List<TouchEvent> touchEventBuffer = new ArrayList<>();
     private TouchEventPool touchEventPool = new TouchEventPool();
+    private List<TouchEvent> touchEventBuffer = new ArrayList<>();
+    private List<TouchEvent> touchEventBufferCopied = new ArrayList<>();
     private float[] accelerometer = new float[3];
 
 
@@ -128,11 +125,11 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     }
 
     public int getFrameBufferWidth() {
-        return surfaceView.getWidth();
+        return offscreenSurface.getWidth();
     }
 
     public int getFrameBufferHeight() {
-        return surfaceView.getHeight();
+        return offscreenSurface.getHeight();
     }
 
     public void drawBitmap(Bitmap bitmap, int x, int y) {
@@ -168,6 +165,26 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
 
     public int getTouchY(int pointer) {
         return (int) (touchHandler.getTouchY(pointer) * (float) offscreenSurface.getHeight() / (float) surfaceView.getHeight());
+    }
+
+    private void fillEvents() {
+        synchronized (touchEventBuffer) {
+            // in order for other classes to get the touch events and work with them
+            // we copy them from the original list and clear them and hand over the copied list
+            // this way we minimize the time that the list is being locked under synchronized
+            for (TouchEvent touchEvent : touchEventBuffer) {
+                touchEventBufferCopied.add(touchEvent);
+            }
+            touchEventBuffer.clear();
+        }
+    }
+
+    private void freeEvents() {
+        synchronized (touchEventBufferCopied) {
+            for (TouchEvent touchEventCopied : touchEventBufferCopied) {
+                touchEventPool.free(touchEventCopied);
+            }
+        }
     }
 
     public float[] getAccelerometer() {
@@ -214,9 +231,11 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
                     Canvas canvas = surfaceHolder.lockCanvas();
                     // we will do all the drawing here
 
+                    fillEvents();
                     if (screen != null) {
                         screen.update(0);
                     }
+                    freeEvents();
 
                     src.left = 0;
                     src.top = 0;

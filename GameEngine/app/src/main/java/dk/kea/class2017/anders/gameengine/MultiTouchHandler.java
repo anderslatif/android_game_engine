@@ -34,7 +34,7 @@ public class MultiTouchHandler implements TouchHandler, View.OnTouchListener{
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                //break;
+                //break;   We don't need break cause action down and action pointer down should resolve into the same response
             case MotionEvent.ACTION_POINTER_DOWN:
                 touchEvent = touchEventPool.obtain();
                 touchEvent.type = TouchEvent.TouchEventType.Down;
@@ -44,7 +44,9 @@ public class MultiTouchHandler implements TouchHandler, View.OnTouchListener{
                 touchY[pointerId] = (int) event.getY(pointerIndex);
                 touchEvent.y = touchY[pointerId];
                 isTouched[pointerId] = true;
-                touchEventBuffer.add(touchEvent);
+                synchronized (touchEventBuffer) {
+                    touchEventBuffer.add(touchEvent);
+                }
                 break;
             case MotionEvent.ACTION_UP:
                 //break;
@@ -59,22 +61,26 @@ public class MultiTouchHandler implements TouchHandler, View.OnTouchListener{
                 touchY[pointerId] = (int) event.getY(pointerIndex);
                 touchEvent.y = touchY[pointerId];
                 isTouched[pointerId] = false;
-                touchEventBuffer.add(touchEvent);
+                synchronized (touchEventBuffer) {
+                    touchEventBuffer.add(touchEvent);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 int pointerCount = event.getPointerCount();
-                for (int i=0; i < pointerCount; i++) {
-                    touchEvent = touchEventPool.obtain();
-                    touchEvent.type = TouchEvent.TouchEventType.Dragged;
-                    pointerIndex = i;
-                    pointerId = event.getPointerId(pointerIndex);
-                    touchEvent.pointer = pointerId;
-                    touchX[pointerId] = (int) event.getX(pointerIndex);
-                    touchEvent.x = touchX[pointerId];
-                    touchY[pointerId] = (int) event.getY(pointerIndex);
-                    touchEvent.y = touchY[pointerId];
-                    isTouched[pointerId] = true;
-                    touchEventBuffer.add(touchEvent);
+                synchronized (touchEventBuffer) {
+                    for (int i = 0; i < pointerCount; i++) {
+                        touchEvent = touchEventPool.obtain();
+                        touchEvent.type = TouchEvent.TouchEventType.Dragged;
+                        pointerIndex = i;
+                        pointerId = event.getPointerId(pointerIndex);
+                        touchEvent.pointer = pointerId;
+                        touchX[pointerId] = (int) event.getX(pointerIndex);
+                        touchEvent.x = touchX[pointerId];
+                        touchY[pointerId] = (int) event.getY(pointerIndex);
+                        touchEvent.y = touchY[pointerId];
+                        isTouched[pointerId] = true;
+                        touchEventBuffer.add(touchEvent);
+                    }
                 }
                 break;
         }

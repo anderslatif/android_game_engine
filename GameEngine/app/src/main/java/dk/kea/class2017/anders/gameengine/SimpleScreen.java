@@ -33,7 +33,7 @@ public class SimpleScreen extends Screen {
             }
         }
 
-        float x = game.getAccelerometer()[0];
+        float x = -game.getAccelerometer()[0];
         float y = game.getAccelerometer()[1];
         float accConstant = 10;
         x = (x/accConstant) * game.getFrameBufferWidth()/2 + game.getFrameBufferWidth()/2;

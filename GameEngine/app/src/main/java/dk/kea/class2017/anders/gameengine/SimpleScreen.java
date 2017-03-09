@@ -1,8 +1,10 @@
 package dk.kea.class2017.anders.gameengine;
 
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -15,21 +17,43 @@ public class SimpleScreen extends Screen {
     int y = 0;
     Bitmap bitmap;
     int clearColor = Color.BLUE;
+    Sound sound;
+    Music music;
+    boolean isPlaying = false;
+    Vibrator v;
 
     public SimpleScreen(GameEngine game) {
         super(game);
-
         bitmap = game.loadBitmap("bob.png");
+        sound = game.loadSound("blocksplosion.wav");
+        music = game.loadMusic("music.ogg");
+        music.setLooping(true);
+        music.play();
+        isPlaying = true;
+        v = (Vibrator) game.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     @Override
     public void update(float deltaTime) {
-
+        Random rnd = new Random();
+        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+        /*game.clearFrameBuffer(color);*/
         game.clearFrameBuffer(clearColor);
+
+        Log.d("SimpleScreen", "********************** fps: " + game.getFrameRate());
 
         for (int pointer=0; pointer<5; pointer++) {
             if (game.isTouchDown(pointer)) {
                 game.drawBitmap(bitmap, game.getTouchX(pointer), game.getTouchY(pointer));
+                //sound.play(1);
+                //v.vibrate(200);
+                if (music.isPlaying()) {
+                    music.pause();
+                    isPlaying = false;
+                } else {
+                    music.play();
+                    isPlaying = true;
+                }
             }
         }
 
@@ -45,16 +69,18 @@ public class SimpleScreen extends Screen {
 
     @Override
     public void pause() {
-
+        music.pause();
     }
 
     @Override
     public void resume() {
-
+        if (!isPlaying) {
+            music.play();
+        }
     }
 
     @Override
     public void dispose() {
-
+        music.dispose();
     }
 }

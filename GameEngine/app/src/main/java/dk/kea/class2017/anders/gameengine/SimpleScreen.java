@@ -6,9 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Vibrator;
 import android.util.Log;
-import android.view.KeyEvent;
 
-import java.security.Key;
 import java.util.Random;
 
 public class SimpleScreen extends Screen {
@@ -20,7 +18,7 @@ public class SimpleScreen extends Screen {
     Sound sound;
     Music music;
     boolean isPlaying = false;
-    Vibrator v;
+    Vibrator vibrator;
 
     public SimpleScreen(GameEngine game) {
         super(game);
@@ -30,7 +28,7 @@ public class SimpleScreen extends Screen {
         music.setLooping(true);
         music.play();
         isPlaying = true;
-        v = (Vibrator) game.getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator = (Vibrator) game.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     @Override
@@ -46,7 +44,7 @@ public class SimpleScreen extends Screen {
             if (game.isTouchDown(pointer)) {
                 game.drawBitmap(bitmap, game.getTouchX(pointer), game.getTouchY(pointer));
                 //sound.play(1);
-                //v.vibrate(200);
+                //vibrator.vibrate(200);
                 if (music.isPlaying()) {
                     music.pause();
                     isPlaying = false;

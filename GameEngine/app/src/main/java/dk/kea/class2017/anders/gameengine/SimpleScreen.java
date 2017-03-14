@@ -11,8 +11,8 @@ import java.util.Random;
 
 public class SimpleScreen extends Screen {
 
-    int x = 0;
-    int y = 0;
+    float x = 0;
+    float y = 0;
     Bitmap bitmap;
     int clearColor = Color.BLUE;
     Sound sound;
@@ -55,14 +55,23 @@ public class SimpleScreen extends Screen {
             }
         }
 
-        float x = -game.getAccelerometer()[0];
+/*        float x = -game.getAccelerometer()[0];
         float y = game.getAccelerometer()[1];
         float accConstant = 10;
         x = (x/accConstant) * game.getFrameBufferWidth()/2 + game.getFrameBufferWidth()/2;
         y = (y/accConstant) * game.getFrameBufferHeight()/2 + game.getFrameBufferHeight()/2;
 
-        game.drawBitmap(bitmap, (int)(x-(float)bitmap.getWidth()/2), (int)(y-(float)bitmap.getHeight()/2));
+        game.drawBitmap(bitmap, (int)(x-(float)bitmap.getWidth()/2), (int)(y-(float)bitmap.getHeight()/2));*/
 
+        x = x + 50 * deltaTime;
+        y = y + 4;
+        if (x > game.getFrameBufferWidth()) {
+            x = 0;
+        }
+        if (y > game.getFrameBufferHeight()) {
+            y = 0;
+        }
+        game.drawBitmap(bitmap, (int)x, (int)y);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package dk.kea.class2017.anders.gameengine.Breakout;
 
 
-import dk.kea.class2017.anders.gameengine.GameEngine;
-import dk.kea.class2017.anders.gameengine.Screen;
+import dk.kea.class2017.anders.gameengine.GameEngine.GameEngine;
+import dk.kea.class2017.anders.gameengine.GameEngine.Screen;
 
 public class MainMenu extends GameEngine{
 

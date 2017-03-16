@@ -1,11 +1,9 @@
-package dk.kea.class2017.anders.gameengine;
+package dk.kea.class2017.anders.gameengine.GameEngine;
 
 
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MultiTouchHandler implements TouchHandler, View.OnTouchListener{

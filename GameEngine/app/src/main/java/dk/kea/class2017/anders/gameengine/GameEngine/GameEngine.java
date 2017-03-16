@@ -1,4 +1,4 @@
-package dk.kea.class2017.anders.gameengine;
+package dk.kea.class2017.anders.gameengine.GameEngine;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,11 +11,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -79,13 +77,13 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     }
 
 
-
     public void setScreen(Screen screen) {
         if (this.screen != null) {
             this.screen.dispose();
         }
         this.screen = screen;
     }
+
     public Bitmap loadBitmap(String fileName) {
         InputStream in = null;
         Bitmap bitmap = null;

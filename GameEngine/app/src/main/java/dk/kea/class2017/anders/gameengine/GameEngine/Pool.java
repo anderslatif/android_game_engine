@@ -1,4 +1,4 @@
-package dk.kea.class2017.anders.gameengine;
+package dk.kea.class2017.anders.gameengine.GameEngine;
 
 
 import java.util.ArrayList;

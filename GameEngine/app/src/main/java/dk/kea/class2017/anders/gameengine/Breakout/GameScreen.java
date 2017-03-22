@@ -8,11 +8,11 @@ import dk.kea.class2017.anders.gameengine.GameEngine.Screen;
 
 public class GameScreen extends Screen {
 
-    enum GameState {
+    enum State {
         Paused, Running, GameOver
     }
 
-    GameState gameState = GameState.Running;
+    State state = State.Running;
     Bitmap background;
     Bitmap resume;
     Bitmap gameOver;
@@ -30,30 +30,34 @@ public class GameScreen extends Screen {
 
     @Override
     public void update(float deltaTime) {
-        if (gameState == GameState.Paused && game.isTouchDown(0)) {
-            gameState = GameState.Running;
+        if (state == State.Paused && game.isTouchDown(0)) {
+            state = State.Running;
         }
-        if (gameState == GameState.GameOver && game.isTouchDown(0)) {
+        if (state == State.GameOver && game.isTouchDown(0)) {
             game.setScreen(new MainMenuScreen(game));
             return;
         }
-        if (gameState == GameState.Running && game.isTouchDown(0)
-                && game.getTouchX(0) > 320-40 && game.getTouchY(0) < 40) {
+        if (state == State.Running && game.isTouchDown(0)
+                && game.getTouchX(0) > game.getFrameBufferWidth()-resume.getWidth()
+                && game.getTouchY(0) < resume.getWidth()) {
             pause();
         }
         game.drawBitmap(background, 0, 0);
 
-        if (gameState == GameState.Running) {
-            world.update(deltaTime);
+        if (state == State.Running) {
+            world.update(deltaTime, game.getAccelerometer()[0]);
+            renderer.render();
         }
-        renderer.render();
+        if (world.gameOver) {
+            state = State.GameOver;
+        }
 
 
-        if (gameState == GameState.Paused) {
+        if (state == State.Paused) {
             game.drawBitmap(resume, game.getFrameBufferWidth()/2 - resume.getWidth()/2,
                                     game.getFrameBufferHeight()/2 - resume.getHeight()/2);
         }
-        if (gameState == GameState.GameOver) {
+        if (state == State.GameOver) {
             game.drawBitmap(gameOver, game.getFrameBufferWidth()/2 - gameOver.getWidth()/2,
                     game.getFrameBufferHeight()/2 - gameOver.getHeight()/2);
         }
@@ -61,8 +65,8 @@ public class GameScreen extends Screen {
 
     @Override
     public void pause() {
-        if (gameState == GameState.Running) {
-            gameState = GameState.Paused;
+        if (state == State.Running) {
+            state = State.Paused;
         }
     }
 

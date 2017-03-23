@@ -24,7 +24,7 @@ public class GameScreen extends Screen {
         background = game.loadBitmap("background.png");
         resume = game.loadBitmap("resume.png");
         gameOver = game.loadBitmap("gameover.png");
-        world = new World();
+        world = new World(game);
         renderer = new WorldRenderer(game, world);
     }
 
@@ -38,16 +38,16 @@ public class GameScreen extends Screen {
             return;
         }
         if (state == State.Running && game.isTouchDown(0)
-                && game.getTouchX(0) > game.getFrameBufferWidth()-resume.getWidth()
-                && game.getTouchY(0) < resume.getWidth()) {
+                && game.getTouchX(0) > game.getFrameBufferWidth()-40
+                && game.getTouchY(0) < 40) {  // 40 is the height of the pause icon in the top right corner of our background
             pause();
         }
         game.drawBitmap(background, 0, 0);
 
         if (state == State.Running) {
             world.update(deltaTime, game.getAccelerometer()[0]);
-            renderer.render();
         }
+        renderer.render();
         if (world.gameOver) {
             state = State.GameOver;
         }
@@ -55,11 +55,11 @@ public class GameScreen extends Screen {
 
         if (state == State.Paused) {
             game.drawBitmap(resume, game.getFrameBufferWidth()/2 - resume.getWidth()/2,
-                                    game.getFrameBufferHeight()/2 - resume.getHeight()/2);
+                                    game.getFrameBufferHeight()*2/3 - resume.getHeight()/2);
         }
         if (state == State.GameOver) {
             game.drawBitmap(gameOver, game.getFrameBufferWidth()/2 - gameOver.getWidth()/2,
-                    game.getFrameBufferHeight()/2 - gameOver.getHeight()/2);
+                    game.getFrameBufferHeight()*2/3 - gameOver.getHeight()/2);
         }
     }
 

@@ -1,6 +1,5 @@
 package dk.kea.class2017.anders.gameengine.Breakout;
 
-
 import android.graphics.Bitmap;
 
 import dk.kea.class2017.anders.gameengine.GameEngine.GameEngine;

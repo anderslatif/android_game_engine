@@ -58,7 +58,12 @@ public class World {
             paddle.x = MAX_X - Paddle.WIDTH;
         }
         collideBallWithPaddle();
-        collideBallWithBlocks();
+        collideBallWithBlocks(deltaTime);
+
+        if (blocks.size() == 0) {
+            generateBlocks();
+        }
+
     }
 
     private void generateBlocks() {
@@ -88,21 +93,100 @@ public class World {
         return false;
     }
 
-    private void collideBallWithBlocks() {
+    private void collideBallWithBlocks(float deltaTime) {
         for (int i=0; i<blocks.size();i++) {
             Block block = blocks.get(i);
             if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT,
                     block.x, block.y, Block.WIDTH, Block.HEIGHT)) {
                 blocks.remove(i);
-                i=i-1;
+                i=i-1; // since the block has been removed the next to check is now at index minus 1
+                float oldvx = ball.vx;
+                float oldvy = ball.vy;
+                reflectBall(ball, block);
+                ball.x = ball.x - oldvx * deltaTime * 1.01f;
+                ball.y = ball.y - oldvy * deltaTime * 1.01f;
             }
         }
-        /*for (Block block : blocks) {
-            if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT,
-                            block.x, block.y, Block.WIDTH, Block.HEIGHT)) {
-                blocks.remove(block);
+    }
+
+    private void reflectBall(Ball ball, Block block) {
+        // check the top left corner of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y, 1, 1)) {
+            if (ball.vx > 0) {
+                ball.vx = -ball.vx;
             }
-        }*/
+            if (ball.vy > 0) {
+                ball.vy = -ball.vy;
+            }
+            return;
+        }
+        // check the top right corner of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x+Block.WIDTH, block.y, 1, 1)) {
+            if (ball.vx < 0) {
+                ball.vx = -ball.vx;
+            }
+            if (ball.vy < 0) {
+                ball.vy = -ball.vy;
+            }
+            return;
+        }
+        // check the bottom left corner of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y+Block.HEIGHT, 1, 1)) {
+            if (ball.vx > 0) {
+                ball.vx = -ball.vx;
+            }
+            if (ball.vy < 0) {
+                ball.vy = -ball.vy;
+            }
+            return;
+        }
+
+        // check the bottom right corner of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x+Block.WIDTH, block.y+Block.HEIGHT, 1, 1)) {
+            if (ball.vx < 0) {
+                ball.vx = -ball.vx;
+            }
+            if (ball.vy < 0) {
+                ball.vy = -ball.vy;
+            }
+            return;
+        }
+
+        // check the top of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y, Block.WIDTH, 1)) {
+            // if get here the if statement is logically not needed but it makes the code more logically sound and avoid lags causing bugs
+            if (ball.vy > 0) {
+                ball.vy = -ball.vy;
+            }
+            return;
+        }
+
+        // check the right side of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT,
+                        block.x+Block.WIDTH, block.y, 1, Block.HEIGHT)) {
+            if (ball.vx > 0) {
+                ball.vx = -ball.vx;
+            }
+            return;
+        }
+
+        // check the bottom of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT,
+                        block.x, block.y + Block.HEIGHT, Block.WIDTH, 1)) {
+            if (ball.vy < 0) {
+                ball.vy = -ball.vy;
+            }
+            return;
+        }
+
+        // check the left side of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT,
+                block.x, block.y, 1, Block.HEIGHT)) {
+            if (ball.vx > 0) {
+                ball.vx = -ball.vx;
+            }
+        }
+
     }
 
 }

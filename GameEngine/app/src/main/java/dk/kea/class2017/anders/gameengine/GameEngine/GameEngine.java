@@ -6,7 +6,9 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -44,6 +46,7 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     private float[] accelerometer = new float[3];
     private SoundPool soundPool;
     private int framesPerSecond = 0;
+    private Paint paint = new Paint();
 
 
     public abstract Screen createStartScreen();
@@ -177,6 +180,10 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         return touchHandler.isTouchDown(pointer);
     }
 
+    public List<TouchEvent> getTouchEvents() {
+        return touchEventBufferCopied;
+    }
+
     public int getTouchX(int pointer) {
         return (int) (touchHandler.getTouchX(pointer) * (float) offscreenSurface.getWidth() / (float) surfaceView.getWidth());
     }
@@ -202,6 +209,7 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
             for (TouchEvent touchEventCopied : touchEventBufferCopied) {
                 touchEventPool.free(touchEventCopied);
             }
+            touchEventBufferCopied.clear();
         }
     }
 
@@ -214,6 +222,21 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
 
     public void onSensorChanged(SensorEvent event) {
         System.arraycopy(event.values, 0, accelerometer, 0, 3);
+    }
+
+    public Typeface loadFont(String filename) {
+        Typeface font = Typeface.createFromAsset(getAssets(), filename);
+        if (font == null) {
+            throw new RuntimeException("Could not load font from file: " + filename);
+        }
+        return font;
+    }
+
+    public void drawText(Typeface font, String text, int x, int y, int color, float size) {
+        paint.setTypeface(font);
+        paint.setTextSize(size);
+        paint.setColor(color);
+        canvas.drawText(text, x, y, paint);
     }
 
     public void run() {

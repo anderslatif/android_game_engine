@@ -8,19 +8,23 @@ import dk.kea.class2017.anders.gameengine.GameEngine.GameEngine;
 
 public class World {
 
+
     public static final float MIN_X = 0;
     public static final float MAX_X = 319;  // minus 1 pixel because we start at pixel 0
     public static final float MIN_Y = 40; // 40 because there is a top screen in our background where the ball shouldn't go
     public static final float MAX_Y = 479;
     boolean gameOver = false;
+    GameEngine game;
+    CollisionListener collisionListener;
     Ball ball = new Ball();
     Paddle paddle = new Paddle();
     List<Block> blocks = new ArrayList<>();
-    GameEngine game;
+    int points = 0;
 
-    public World(GameEngine game) {
-        generateBlocks();
+    public World(GameEngine game, CollisionListener collisionListener) {
         this.game = game;
+        this.collisionListener = collisionListener;
+        generateBlocks();
     }
 
     public void update(float deltaTime, float accelX) {
@@ -30,14 +34,17 @@ public class World {
         if (ball.x < MIN_X) {
             ball.vx = -ball.vx;
             ball.x = MIN_X;
+            collisionListener.collisionWall();
         }
         if (ball.x > MAX_X - Ball.WIDTH) {
             ball.vx = -ball.vx;
             ball.x = MAX_X - Ball.WIDTH;
+            collisionListener.collisionWall();
         }
         if (ball.y < MIN_Y) {
             ball.vy = -ball.vy;
             ball.y = MIN_Y;
+            collisionListener.collisionWall();
         }
         if (ball.y > MAX_Y - Ball.HEIGHT) {
             gameOver = true;
@@ -77,7 +84,33 @@ public class World {
     }
 
     private void collideBallWithPaddle() {
-        if (ball.x + Ball.WIDTH/3*2 > paddle.x && ball.x < paddle.x + Paddle.WIDTH && ball.y + Ball.HEIGHT > paddle.y) {
+        // adding some pixels to the paddle so that we make sure that ball actually hits the paddle and not the two corners of the image
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, paddle.x, paddle.y, 1, Paddle.HEIGHT/2)) {
+            if (ball.vx > 0) {
+                // if the ball is coming from the left then invert both
+                ball.vx = -ball.vx;
+            }
+            ball.vy = -ball.vy;
+            ball.y = paddle.y - Ball.HEIGHT - 1;
+            collisionListener.collisionPaddle();
+            return;
+        }
+
+        // right corner
+        if (collideRects(ball.x, ball.y + Ball.HEIGHT, Ball.WIDTH, 1, paddle.x + Paddle.WIDTH, paddle.y, 1, Paddle.HEIGHT/2)) {
+            if (ball.vx < 0) {
+                // if it comes from the right side towards left, then invert both
+                ball.vx = -ball.vx;
+            }
+            ball.vy = - ball.vy;
+            ball.y = paddle.y - Ball.HEIGHT - 1;
+            return;
+        }
+
+        // check middle part of paddle top edge
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, paddle.x, paddle.y, Paddle.WIDTH, 1)) {
+        /*if (ball.x + Ball.WIDTH > paddle.x && ball.x < paddle.x + Paddle.WIDTH &&
+                ball.y + Ball.HEIGHT > paddle.y && ball.y + Ball.HEIGHT < paddle.y + 3) {*/
             ball.vy = - ball.vy;
             ball.y = paddle.y - Ball.HEIGHT;
         }
@@ -98,6 +131,7 @@ public class World {
             Block block = blocks.get(i);
             if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT,
                     block.x, block.y, Block.WIDTH, Block.HEIGHT)) {
+                points = points + 10 - block.type;
                 blocks.remove(i);
                 i=i-1; // since the block has been removed the next to check is now at index minus 1
                 float oldvx = ball.vx;
@@ -105,6 +139,7 @@ public class World {
                 reflectBall(ball, block);
                 ball.x = ball.x - oldvx * deltaTime * 1.01f;
                 ball.y = ball.y - oldvy * deltaTime * 1.01f;
+                collisionListener.collisionBlock();
             }
         }
     }

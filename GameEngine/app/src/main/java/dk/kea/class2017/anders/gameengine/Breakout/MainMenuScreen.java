@@ -10,22 +10,20 @@ public class MainMenuScreen extends Screen {
 
     Bitmap mainMenuBackground;
     Bitmap insertCoin;
-    Music music;
     float passedTime = 0;
 
     public MainMenuScreen(GameEngine game) {
         super(game);
         mainMenuBackground = game.loadBitmap("mainmenu.png");
         insertCoin = game.loadBitmap("insertcoin.png");
-        music = game.loadMusic("music.ogg");
-        music.setLooping(true);
-        music.play();
+        game.music.pause();
     }
 
     @Override
     public void update(float deltaTime) {
 
         if (game.isTouchDown(0)) {
+            game.music.play();
             game.setScreen(new GameScreen(game));
             return;
         }

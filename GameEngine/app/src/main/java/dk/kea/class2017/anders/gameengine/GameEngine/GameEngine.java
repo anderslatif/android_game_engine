@@ -47,6 +47,7 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     private SoundPool soundPool;
     private int framesPerSecond = 0;
     private Paint paint = new Paint();
+    public Music music;
 
 
     public abstract Screen createStartScreen();
@@ -236,7 +237,7 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         paint.setTypeface(font);
         paint.setTextSize(size);
         paint.setColor(color);
-        canvas.drawText(text, x, y, paint);
+        canvas.drawText(text, x, y+size, paint);
     }
 
     public void run() {

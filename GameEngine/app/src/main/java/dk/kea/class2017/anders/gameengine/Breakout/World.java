@@ -48,6 +48,8 @@ public class World {
         }
         if (ball.y > MAX_Y - Ball.HEIGHT) {
             gameOver = true;
+            game.music.stop();
+            collisionListener.collisionFloor();
             return;
         }
 
@@ -69,8 +71,9 @@ public class World {
 
         if (blocks.size() == 0) {
             generateBlocks();
+            ball.x = 160;
+            ball.y = 240;
         }
-
     }
 
     private void generateBlocks() {

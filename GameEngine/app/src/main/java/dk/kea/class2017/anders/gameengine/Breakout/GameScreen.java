@@ -26,6 +26,7 @@ public class GameScreen extends Screen {
     Typeface font;
     Sound bounceSound;
     Sound blockSound;
+    Sound gameOverSound;
     Sound gameoverSound;
     MyCollisionListener myCollisionListener;
     World world;
@@ -39,7 +40,8 @@ public class GameScreen extends Screen {
         font = game.loadFont("font.ttf");
         bounceSound = game.loadSound("bounce.wav");
         blockSound = game.loadSound("blocksplosion.wav");
-        myCollisionListener = new MyCollisionListener(bounceSound, bounceSound, blockSound);
+        gameOverSound = game.loadSound("gameoverlaugh.wav");
+        myCollisionListener = new MyCollisionListener(bounceSound, bounceSound, blockSound, gameOverSound);
         world = new World(game, myCollisionListener);
         renderer = new WorldRenderer(game, world);
     }
@@ -49,13 +51,13 @@ public class GameScreen extends Screen {
         if (state == State.Paused && game.isTouchDown(0)) {
             state = State.Running;
         }
-        if (state == State.GameOver && game.isTouchDown(0)) {
+        if (state == State.GameOver) {
             List<TouchEvent> events = game.getTouchEvents();
             for (TouchEvent event : events) {
-                //if (event.type == TouchEvent.TouchEventType.Up) { //todo for some reason the list only contains the most recent item therefor never UP (but down)
+                if (event.type == TouchEvent.TouchEventType.Up) {
                     game.setScreen(new MainMenuScreen(game));
                     return;
-                //}
+                }
             }
         }
         if (state == State.Running && game.isTouchDown(0)
@@ -68,7 +70,7 @@ public class GameScreen extends Screen {
         if (state == State.Running) {
             world.update(deltaTime, game.getAccelerometer()[0]);
         }
-        game.drawText(font, "Score: " + Integer.toString(world.points), 25, 11, Color.GREEN, 12);
+        game.drawText(font, "Score: " + Integer.toString(world.points), 27, 11, Color.GREEN, 12);
         renderer.render();
         if (world.gameOver) {
             state = State.GameOver;
@@ -90,11 +92,12 @@ public class GameScreen extends Screen {
         if (state == State.Running) {
             state = State.Paused;
         }
+        game.music.pause();
     }
 
     @Override
     public void resume() {
-
+        game.music.play();
     }
 
     @Override

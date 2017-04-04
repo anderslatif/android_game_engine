@@ -6,5 +6,6 @@ public interface CollisionListener {
     void collisionWall();
     void collisionPaddle();
     void collisionBlock();
+    void collisionFloor();
 
 }

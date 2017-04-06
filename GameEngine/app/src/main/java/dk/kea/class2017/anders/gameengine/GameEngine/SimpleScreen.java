@@ -22,9 +22,9 @@ public class SimpleScreen extends Screen {
 
     public SimpleScreen(GameEngine game) {
         super(game);
-        bitmap = game.loadBitmap("bob.png");
-        sound = game.loadSound("blocksplosion.wav");
-        music = game.loadMusic("music.ogg");
+        bitmap = game.loadBitmap("breakout/bob.png");
+        sound = game.loadSound("breakout/blocksplosion.wav");
+        music = game.loadMusic("breakout/music.ogg");
         music.setLooping(true);
         music.play();
         isPlaying = true;

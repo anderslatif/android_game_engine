@@ -1,11 +1,10 @@
-package dk.kea.class2017.anders.gameengine.Breakout;
+package dk.kea.class2017.anders.gameengine.CarScroller;
 
 
 import dk.kea.class2017.anders.gameengine.GameEngine.GameEngine;
 import dk.kea.class2017.anders.gameengine.GameEngine.Screen;
 
-public class MainMenu extends GameEngine{
-
+public class CarScroller extends GameEngine {
 
     @Override
     public Screen createStartScreen() {
@@ -22,6 +21,12 @@ public class MainMenu extends GameEngine{
     public void onResume() {
         super.onResume();
         music.play();
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        music.stop();
+        music.dispose();
     }
 
 }

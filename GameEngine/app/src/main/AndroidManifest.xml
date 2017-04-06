@@ -9,8 +9,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Breakout.MainMenu"
-            android:screenOrientation="portrait"
+        <!--<activity android:name=".Breakout.MainMenu" -->
+        <activity android:name=".CarScroller.CarScroller"
+            android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

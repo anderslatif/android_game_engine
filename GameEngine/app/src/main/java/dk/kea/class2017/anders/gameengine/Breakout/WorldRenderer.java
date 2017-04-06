@@ -17,9 +17,9 @@ public class WorldRenderer {
     public WorldRenderer(GameEngine game, World world) {
         this.game = game;
         this.world = world;
-        ballImage = game.loadBitmap("ball.png");
-        paddleImage = game.loadBitmap("paddle.png");
-        blockImage = game.loadBitmap("blocks.png");
+        ballImage = game.loadBitmap("breakout/ball.png");
+        paddleImage = game.loadBitmap("breakout/paddle.png");
+        blockImage = game.loadBitmap("breakout/blocks.png");
     }
 
     public void render() {

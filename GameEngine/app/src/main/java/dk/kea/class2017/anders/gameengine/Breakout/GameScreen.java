@@ -4,7 +4,6 @@ package dk.kea.class2017.anders.gameengine.Breakout;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
 
 import java.util.List;
 
@@ -34,13 +33,13 @@ public class GameScreen extends Screen {
 
     public GameScreen(GameEngine game) {
         super(game);
-        background = game.loadBitmap("background.png");
-        resume = game.loadBitmap("resume.png");
-        gameOver = game.loadBitmap("gameover.png");
-        font = game.loadFont("font.ttf");
-        bounceSound = game.loadSound("bounce.wav");
-        blockSound = game.loadSound("blocksplosion.wav");
-        gameOverSound = game.loadSound("gameoverlaugh.wav");
+        background = game.loadBitmap("breakout/background.png");
+        resume = game.loadBitmap("breakout/resume.png");
+        gameOver = game.loadBitmap("breakout/gameover.png");
+        font = game.loadFont("breakout/font.ttf");
+        bounceSound = game.loadSound("breakout/bounce.wav");
+        blockSound = game.loadSound("breakout/blocksplosion.wav");
+        gameOverSound = game.loadSound("breakout/gameoverlaugh.wav");
         myCollisionListener = new MyCollisionListener(bounceSound, bounceSound, blockSound, gameOverSound);
         world = new World(game, myCollisionListener);
         renderer = new WorldRenderer(game, world);

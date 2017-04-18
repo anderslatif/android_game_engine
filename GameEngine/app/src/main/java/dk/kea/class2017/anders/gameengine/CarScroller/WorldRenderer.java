@@ -12,6 +12,7 @@ public class WorldRenderer {
     Bitmap scrBackImage;
     Bitmap carImage;
     Bitmap monsterImage;
+    Bitmap playerImage;
     int offScreenSurfaceWidth;
     int offScreenSurfaceHeight;
 
@@ -21,6 +22,7 @@ public class WorldRenderer {
         scrBackImage = game.loadBitmap("carscroller/carbackground.png");
         carImage = game.loadBitmap("carscroller/bluecar2.png");
         monsterImage = game.loadBitmap("carscroller/yellowmonster.png");
+        playerImage = game.loadBitmap("carscroller/runningalien.png");
         offScreenSurfaceWidth = game.getFrameBufferWidth();
         offScreenSurfaceHeight = game.getFrameBufferHeight();
     }
@@ -29,7 +31,9 @@ public class WorldRenderer {
     public void render() {
         game.drawBitmap(scrBackImage, 0, 0, (int)world.scrollingBackground.scrollx, 0,
                 offScreenSurfaceWidth, offScreenSurfaceHeight);
-        game.drawBitmap(carImage, 30, 160);
+        //game.drawBitmap(carImage, 30, 160);
+        game.drawBitmap(playerImage, world.player.x, world.player.y, world.player.spritex, world.player.spritey,
+                        Player.WIDTH, Player.HEIGHT);
     }
 
 }

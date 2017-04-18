@@ -15,17 +15,20 @@ public class World {
 
     private GameEngine game;
     int offScreenSurfaceWidth;
+    float renderTimes;
 
     boolean gameOver = false;
 
     ScrollingBackground scrollingBackground;
     Car car;
+    Player player;
     List<Monster> monsters = new ArrayList<>();
 
     public World(GameEngine game) {
         this.game = game;
         scrollingBackground = new ScrollingBackground();
         car = new Car();
+        player = new Player(30, 160 - Player.HEIGHT/2);
         offScreenSurfaceWidth = game.getFrameBufferWidth();
     }
 
@@ -34,6 +37,20 @@ public class World {
         if (scrollingBackground.scrollx > MAX_X - offScreenSurfaceWidth) {
             scrollingBackground.scrollx = 0;
         }
+
+        renderTimes = renderTimes + 100 * deltaTime;
+        if (renderTimes > 20) {
+            player.spritex = player.spritex + Player.WIDTH;
+            if (player.spritex == 7 * Player.WIDTH) {
+                player.spritex = 0;
+                player.spritey = player.spritey + Player.HEIGHT;
+                if (player.spritey == 3 * player.HEIGHT) {
+                    player.spritey = 0;
+                }
+            }
+            renderTimes = 0;
+        }
+
 
     }
 
